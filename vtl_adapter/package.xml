@@ -18,9 +18,9 @@
 -->
 
 <package format="3">
-  <name>v2i_tester</name>
+  <name>vtl_adapter</name>
   <version>0.0.0</version>
-  <description>The v2i tester package</description>
+  <description>The vtl adapter package</description>
   <maintainer email="yuma.nihei@tier4.jp">Yuma Nihei</maintainer>
   <license>Apache License 2.0</license>
   

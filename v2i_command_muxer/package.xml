@@ -18,9 +18,9 @@
 -->
 
 <package format="3">
-  <name>v2i_tester</name>
+  <name>v2i_command_muxer</name>
   <version>0.0.0</version>
-  <description>The v2i tester package</description>
+  <description>The v2i command muxer package</description>
   <maintainer email="yuma.nihei@tier4.jp">Yuma Nihei</maintainer>
   <license>Apache License 2.0</license>
   
@@ -28,9 +28,7 @@
 
   <depend>rclcpp</depend>
   <depend>rclcpp_components</depend>
-  <depend>tier4_v2x_msgs</depend>
   <depend>v2i_interface_msgs</depend>
-  <depend>autoware_state_machine_msgs</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>

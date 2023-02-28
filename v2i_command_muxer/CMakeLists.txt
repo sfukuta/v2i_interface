@@ -13,7 +13,7 @@
 # limitations under the License.
 
 cmake_minimum_required(VERSION 3.5)
-project(v2i_tester)
+project(v2i_command_muxer)
 
 ### Compile options
 if(NOT CMAKE_CXX_STANDARD)
@@ -25,49 +25,28 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
-## Dependencies
+### Dependencies
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 # Generate exe file
-#ament_auto_add_library(**
-#  SHARED
-#  src/**
-#)
+ament_auto_add_library(v2i_command_muxer
+  SHARED
+  src/v2i_command_muxer.cpp
+)
 
-#rclcpp_components_register_node(**
-#  PLUGIN "**"
-#  EXECUTABLE *****
-#)
-
-file(GLOB SCRIPT_FILES scripts/*.bash)
-file(GLOB ENV_FILES config/*.env)
-install(
-  PROGRAMS
-  ${SCRIPT_FILES}
-  ${ENV_FILES}
-  DESTINATION
-  lib/${PROJECT_NAME})
+rclcpp_components_register_node(v2i_command_muxer
+  PLUGIN "v2i_command_muxer::V2iCommandMuxer"
+  EXECUTABLE v2i_command_muxer_node
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
-
-  # ament_add_gtest(**
-  #   test/src/test_**.cpp
-  #   test/src/test_**.cpp
-  # )
-  # ament_target_dependencies(test_vtl_command_converter
-  #   rclcpp
-  #   tier4_v2x_msgs
-  #   v2i_interface_msgs
-  # )
-  # target_link_libraries(test_vtl_command_converter
-  #   vtl_command_converter
-  # )
 endif()
 
 ament_auto_package(
   INSTALL_TO_SHARE
-  # launch
+  launch
+  config
 )

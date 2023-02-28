@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Copyright 2023 TIER IV, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source vtl_test.default.env
-
-export VTL_ID=3001
-export INFRA_ID=2
-export INFRA_RESPONSE_TYPE=ALWAYS
-
-source update_vtl_command_msg.bash
+/**:
+  ros__parameters:
+    input_topics : [
+      "/cargo_loading/infrastructure_commands",
+      "/v2i_gate/infrastructure_commands"
+    ]
+    output_topic : "/v2i/infrastructure_commands"
