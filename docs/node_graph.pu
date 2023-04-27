@@ -21,7 +21,7 @@ usecase "cargo_loading_service"
 (/awapi/awapi_awiv_adapter_node) --> (v2i_interface_module) : /awapi/tmp/infrastructure_commands
 (/awapi/awapi_awiv_adapter_node) <-- (v2i_interface_module) : /system/v2x/virtual_traffic_light_states
 (autoware_state_machine) --> (v2i_interface_module) : /autoware_state_machine/state
-(cargo_loading_service) ---> (v2i_interface_module) : /cargo_loding/infurastructre_commands
+(cargo_loading_service) ---> (v2i_interface_module) : /cargo_loding/infrastructure_commands
 (cargo_loading_service) <-- (v2i_interface_module) :/v2i/infrastructer_states
 (v2i_interface_module) --> (broadcasting device) : v2i command (UDP)
 (v2i_interface_module) <-- (broadcasting device) : v2i status (UDP)
