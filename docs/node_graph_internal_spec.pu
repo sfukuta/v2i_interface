@@ -24,24 +24,4 @@ interface "/cargo_loding/infurastructre_commands"
 (/v2i/infrastructure_states) <-- (v2i_interface)
 (v2i_interface) --> (v2i_command_udp)
 (v2i_interface) <-- (v2i_status_udp)
-(broadcasting device) --> (v2ictl_0)
-(broadcasting device) <-- (v2ictl_0)
-(broadcasting device) --> (v2ictl_1)
-(broadcasting device) <-- (v2ictl_1)
-(broadcasting device) --> (v2ictl_n)
-(broadcasting device) <-- (v2ictl_n) : wireless communication
-
-(v2ictl_0) -[hidden] (v2ictl_1)
-(v2ictl_1) -[hidden] (v2ictl_n)
-
-(v2ictl_0) --> (v2ihw_0)
-(v2ictl_0) <-- (v2ihw_0)
-(v2ictl_1) --> (v2ihw_1)
-(v2ictl_1) <-- (v2ihw_1)
-(v2ictl_n) --> (v2ihw_n)
-(v2ictl_n) <-- (v2ihw_n) : GPIO communication
-
-note right of "broadcasting device" : In vehicle
-note right of v2ictl_n : On infrastructure ( off-vehicle )
-
 @enduml
