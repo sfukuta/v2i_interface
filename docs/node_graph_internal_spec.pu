@@ -4,7 +4,7 @@ rectangle autoware {
   interface "/awapi/tmp/infrastructure_commands"
   interface "/system/v2x/virtual_traffic_light_states"
 }
-usecase "autoware_state_machine"
+interface "/autoware_state_machine/state"
 rectangle "v2i_interface" as v2i {
   usecase "v2i_interface" #LightCoral
   usecase "v2i_command_muxer" #LightCoral
