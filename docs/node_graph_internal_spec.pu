@@ -12,7 +12,7 @@ rectangle "v2i_interface" as v2i {
 } 
 interface "v2i command (UDP)" as v2i_command_udp
 interface "v2i status (UDP)" as v2i_status_udp
-usecase "cargo_loading_service"
+interface "/cargo_loding/infurastructre_commands"
 
 (/awapi/awapi_awiv_adapter_node) --> (vtl_adapter) : /awapi/tmp/infrastructure_commands
 (/awapi/awapi_awiv_adapter_node) <-- (vtl_adapter) : /system/v2x/virtual_traffic_light_states
