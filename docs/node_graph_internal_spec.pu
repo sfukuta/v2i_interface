@@ -22,7 +22,6 @@ interface "/cargo_loding/infurastructre_commands"
 (v2i_command_muxer) --> (v2i_interface) : /v2i/infrastructure_commands
 (vtl_adapter) <-- (/v2i/infrastructure_states)
 (/v2i/infrastructure_states) <-- (v2i_interface)
-(cargo_loading_service) <-- (v2i_interface) :/v2i/infrastructer_states
 (v2i_interface) --> (broadcasting device) : v2i command (UDP)
 (v2i_interface) <-- (broadcasting device) : v2i status (UDP)
 (broadcasting device) --> (v2ictl_0)
