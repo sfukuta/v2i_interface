@@ -10,15 +10,8 @@ rectangle "v2i_interface" as v2i {
   usecase "v2i_command_muxer" #LightCoral
   usecase "vtl_adapter" #LightCoral
 } 
-rectangle user-defined {
-  node "broadcasting device"
-  node "v2i controller[0]" as v2ictl_0
-  node "v2i controller[1]" as v2ictl_1
-  node "v2i controller[n]" as v2ictl_n
-  node "v2i infrastructure[0]" as v2ihw_0
-  node "v2i infrastructure[1]" as v2ihw_1
-  node "v2i infrastructure[n]" as v2ihw_n
-}
+interface "v2i command (UDP)" as v2i_command_udp
+interface "v2i status (UDP)" as v2i_status_udp
 usecase "cargo_loading_service"
 
 (/awapi/awapi_awiv_adapter_node) --> (vtl_adapter) : /awapi/tmp/infrastructure_commands
