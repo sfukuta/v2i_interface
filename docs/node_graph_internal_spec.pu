@@ -1,0 +1,53 @@
+@startuml
+
+rectangle autoware {
+  usecase "/awapi/awapi_awiv_adapter_node"
+}
+usecase "autoware_state_machine"
+rectangle "v2i_interface" as v2i {
+usecase "v2i_interface" #LightCoral
+usecase "v2i_command_muxer" #LightCoral
+usecase "vtl_adapter" #LightCoral
+} 
+rectangle user-defined {
+  node "broadcasting device"
+  node "v2i controller[0]" as v2ictl_0
+  node "v2i controller[1]" as v2ictl_1
+  node "v2i controller[n]" as v2ictl_n
+  node "v2i infrastructure[0]" as v2ihw_0
+  node "v2i infrastructure[1]" as v2ihw_1
+  node "v2i infrastructure[n]" as v2ihw_n
+}
+usecase "cargo_loading_service"
+
+(/awapi/awapi_awiv_adapter_node) --> (vtl_adapter) : /awapi/tmp/infrastructure_commands
+(/awapi/awapi_awiv_adapter_node) <-- (vtl_adapter) : /system/v2x/virtual_traffic_light_states
+(autoware_state_machine) --> (vtl_adapter) : /autoware_state_machine/state
+(cargo_loading_service) ---> (v2i_command_muxer) : /cargo_loding/infurastructre_commands
+(vtl_adapter) --> (v2i_command_muxer) : /v2i_gate/infrastructure_commands
+(v2i_command_muxer) --> (v2i_interface) : /v2i/infrastructure_commands
+(vtl_adapter) <-- (v2i_interface) :/v2i/infrastructer_states
+(cargo_loading_service) <-- (v2i_interface) :/v2i/infrastructer_states
+(v2i_interface) --> (broadcasting device) : v2i command (UDP)
+(v2i_interface) <-- (broadcasting device) : v2i status (UDP)
+(broadcasting device) --> (v2ictl_0)
+(broadcasting device) <-- (v2ictl_0)
+(broadcasting device) --> (v2ictl_1)
+(broadcasting device) <-- (v2ictl_1)
+(broadcasting device) --> (v2ictl_n)
+(broadcasting device) <-- (v2ictl_n) : wireless communication
+
+(v2ictl_0) -[hidden] (v2ictl_1)
+(v2ictl_1) -[hidden] (v2ictl_n)
+
+(v2ictl_0) --> (v2ihw_0)
+(v2ictl_0) <-- (v2ihw_0)
+(v2ictl_1) --> (v2ihw_1)
+(v2ictl_1) <-- (v2ihw_1)
+(v2ictl_n) --> (v2ihw_n)
+(v2ictl_n) <-- (v2ihw_n) : GPIO communication
+
+note right of "broadcasting device" : In vehicle
+note right of v2ictl_n : On infrastructure ( off-vehicle )
+
+@enduml
