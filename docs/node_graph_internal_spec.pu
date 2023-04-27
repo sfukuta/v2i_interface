@@ -17,7 +17,7 @@ interface "/cargo_loding/infurastructre_commands"
 (/awapi/awapi_awiv_adapter_node) --> (vtl_adapter) : /awapi/tmp/infrastructure_commands
 (/awapi/awapi_awiv_adapter_node) <-- (vtl_adapter) : /system/v2x/virtual_traffic_light_states
 (autoware_state_machine) --> (vtl_adapter) : /autoware_state_machine/state
-(cargo_loading_service) ---> (v2i_command_muxer) : /cargo_loding/infurastructre_commands
+(/cargo_loding/infurastructre_commands) --> (v2i_command_muxer)
 (vtl_adapter) --> (v2i_command_muxer) : /v2i_gate/infrastructure_commands
 (v2i_command_muxer) --> (v2i_interface) : /v2i/infrastructure_commands
 (vtl_adapter) <-- (v2i_interface) :/v2i/infrastructer_states
