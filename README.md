@@ -11,7 +11,7 @@ It is necessary to prepare a user-defined broadcasting device, which connects to
 - input
   - from [autoware.universe](https://github.com/autowarefoundation/autoware.universe/)
     - `/awapi/tmp/infrastructure_commands` \[[tier4_v2x_msgs/msg/InfrastructureCommandArray](https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_v2x_msgs/msg/InfrastructureCommandArray.msg)\]:<br>Control command to V2I infrastructure. It has an array structure to control multiple infrastructures at the same time.
-    - from [cargo_loading_service](https://github.com/eve-autonomy/cargo_loading_service)
+  - from [cargo_loading_service](https://github.com/eve-autonomy/cargo_loading_service)
     - `/cargo_loding/infurastructre_commands` \[[tier4_v2x_msgs/msg/InfrastructureCommandArray](https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_v2x_msgs/msg/InfrastructureCommandArray.msg)\]:<br>Control command to V2I infrastructure. It has an array structure to control multiple infrastructures at the same time.
   - from [autoware_state_machine](https://github.com/eve-autonomy/autoware_state_machine/)
     - `/autoware_state_machine/state` \[[autoware_state_machine_msgs/msg/StateMachine](https://github.com/eve-autonomy/autoware_state_machine_msgs/blob/main/msg/StateMachine.msg)\]:<br>State of the system.
