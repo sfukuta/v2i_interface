@@ -20,6 +20,8 @@ It is necessary to prepare a user-defined broadcasting device, which connects to
 - output
   - to [autoware.universe](https://github.com/autowarefoundation/autoware.universe/)
     - `/system/v2x/virtual_traffic_light_status` \[[tier4_v2x_msgs/msg/VirtualTrafficLightStateArray](https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_v2x_msgs/msg/VirtualTrafficLightStateArray.msg)\]:<br>ROS2 interface from `v2i_status` (UDP).
+  - to [cargo_loading_service](https://github.com/eve-autonomy/cargo_loading_service)
+    - `/v2i/infrastructer_states` \[[v2i_interface_msgs/msg/InfrastructureStateArray.msg](https://github.com/eve-autonomy/v2i_interface_msgs/blob/main/msg/InfrastructureState.msg)\]:<br>ROS2 interface from `v2i_status` (UDP).
   - to user-defined broadcasting device
     - `v2i command` ([UDP](#v2i-command)) :<br>UDP protocol from `/awapi/tmp/infrastructure_commands`.
 
