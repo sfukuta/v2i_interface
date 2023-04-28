@@ -26,6 +26,8 @@ It is necessary to prepare a user-defined broadcasting device, which connects to
 ## Node Graph
 ![node graph](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/eve-autonomy/v2i_interface/main/docs/node_graph.pu)
 
+- [internal specifications of node graph](https://github.com/eve-autonomy/v2i_interface/main/docs/node_graph_internal_spec.pu)
+
 ## Launch arguments
 
 |Name          |Descriptoin|
