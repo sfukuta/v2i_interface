@@ -1,7 +1,7 @@
 # Vehicle to infrastructure (V2I) interface
 
 ## Overview
-This node converts V2I communication between the Autoware of ROS2 interface and UDP which is outside of ROS2 interface.
+This module converts V2I communication between the Autoware of ROS2 interface and UDP which is outside of ROS2 interface.
 
 This converter acts with a single external device on a vehicle.
 
@@ -29,23 +29,6 @@ It is necessary to prepare a user-defined broadcasting device, which connects to
 ![node graph](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/eve-autonomy/v2i_interface/main/docs/node_graph.pu)
 ### v2i interface ｍodule internal specifications
 ![internal specifications of node graph](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/eve-autonomy/v2i_interface/main/docs/node_graph_internal_spec.pu)
-
-## Launch arguments
-
-|Name          |Descriptoin|
-|:-------------|:----------|
-|operation_mode|Select the following operation modes; `product`, `local_test`. This value changes parameter directories.|
-
-## Parameter description
-These are mandatory parameters of UDP connection to a user-defined broadcasting device.
-|Name          |
-|:-------------|
-|ip_address    |
-|send_port     |
-|receive_port  |
-
-
-If you want to use different set of paremeters, fork the [v2i_interface_params.default](https://github.com/eve-autonomy/v2i_interface_params.default) repository.
 
 ## UDP protocol
 Broadcasting device must meet the following specifications.
@@ -187,3 +170,7 @@ Add every optional tags below to lane object.
 |--|--|--|
 |inparking_loading|0-254|Set infrastructure ID|
 |inparking_engage|1|this tag is auto engage|
+
+## Launch Test mode
+This module has a test mode.
+[This link](https://github.com/eve-autonomy/v2i_interface/tree/main/v2i_interface/) on how to enable test mode.
