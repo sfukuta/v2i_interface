@@ -1,0 +1,33 @@
+@startuml
+
+rectangle autoware {
+  interface "/awapi/tmp/infrastructure_commands"
+  interface "/system/v2x/virtual_traffic_light_states"
+}
+interface "/autoware_state_machine/state"
+rectangle "v2i_interface" as v2i {
+  usecase "v2i_interface" #LightCoral
+  usecase "v2i_command_muxer" #LightCoral
+  usecase "vtl_adapter" #LightCoral
+  interface "/v2i/infrastructure_states"
+} 
+interface "v2i command (UDP)" as v2i_command_udp
+interface "v2i status (UDP)" as v2i_status_udp
+rectangle cargo_loading_service {
+  interface "/cargo_loding/infurastructre_commands"
+  interface "/v2i/infrastructure_states" as v2i_state
+}
+
+
+(/awapi/tmp/infrastructure_commands) --> (vtl_adapter) 
+(/system/v2x/virtual_traffic_light_states) <-- (vtl_adapter) 
+(/autoware_state_machine/state) --> (vtl_adapter)
+(/cargo_loding/infurastructre_commands) --> (v2i_command_muxer)
+(vtl_adapter) --> (v2i_command_muxer) : /v2i_gate/infrastructure_commands
+(v2i_command_muxer) --> (v2i_interface) : /v2i/infrastructure_commands
+(vtl_adapter) <-- (/v2i/infrastructure_states)
+(/v2i/infrastructure_states) <-- (v2i_interface)
+(v2i_state) <-- (/v2i/infrastructure_states)
+(v2i_interface) --> (v2i_command_udp)
+(v2i_interface) <-- (v2i_status_udp)
+@enduml

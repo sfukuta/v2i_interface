@@ -4,7 +4,9 @@ rectangle autoware {
   usecase "/awapi/awapi_awiv_adapter_node"
 }
 usecase "autoware_state_machine"
-usecase "v2i_interface" #LightCoral
+rectangle "v2i_interface" as v2i {
+usecase "v2i_interface_module" #LightCoral
+} 
 rectangle user-defined {
   node "broadcasting device"
   node "v2i controller[0]" as v2ictl_0
@@ -14,12 +16,15 @@ rectangle user-defined {
   node "v2i infrastructure[1]" as v2ihw_1
   node "v2i infrastructure[n]" as v2ihw_n
 }
+usecase "cargo_loading_service"
 
-(/awapi/awapi_awiv_adapter_node) --> (v2i_interface) : /awapi/tmp/infrastructure_commands
-(/awapi/awapi_awiv_adapter_node) <-- (v2i_interface) : /system/v2x/virtual_traffic_light_states
-(autoware_state_machine) --> (v2i_interface) : /autoware_state_machine/state
-(v2i_interface) --> (broadcasting device) : v2i command (UDP)
-(v2i_interface) <-- (broadcasting device) : v2i status (UDP)
+(/awapi/awapi_awiv_adapter_node) --> (v2i_interface_module) : /awapi/tmp/infrastructure_commands
+(/awapi/awapi_awiv_adapter_node) <-- (v2i_interface_module) : /system/v2x/virtual_traffic_light_states
+(autoware_state_machine) -> (v2i_interface_module) : /autoware_state_machine/state
+(cargo_loading_service) ---> (v2i_interface_module) : /cargo_loding/infrastructure_commands
+(cargo_loading_service) <-- (v2i_interface_module) :/v2i/infrastructer_states
+(v2i_interface_module) --> (broadcasting device) : v2i command (UDP)
+(v2i_interface_module) <-- (broadcasting device) : v2i status (UDP)
 (broadcasting device) --> (v2ictl_0)
 (broadcasting device) <-- (v2ictl_0)
 (broadcasting device) --> (v2ictl_1)

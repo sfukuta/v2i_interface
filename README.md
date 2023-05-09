@@ -1,7 +1,7 @@
 # Vehicle to infrastructure (V2I) interface
 
 ## Overview
-This node converts V2I communication between the Autoware of ROS2 interface and UDP which is outside of ROS2 interface.
+This module converts V2I communication between the Autoware of ROS2 interface and UDP which is outside of ROS2 interface.
 
 This converter acts with a single external device on a vehicle.
 
@@ -11,6 +11,8 @@ It is necessary to prepare a user-defined broadcasting device, which connects to
 - input
   - from [autoware.universe](https://github.com/autowarefoundation/autoware.universe/)
     - `/awapi/tmp/infrastructure_commands` \[[tier4_v2x_msgs/msg/InfrastructureCommandArray](https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_v2x_msgs/msg/InfrastructureCommandArray.msg)\]:<br>Control command to V2I infrastructure. It has an array structure to control multiple infrastructures at the same time.
+  - from [cargo_loading_service](https://github.com/eve-autonomy/cargo_loading_service)
+    - `/cargo_loding/infurastructre_commands` \[[tier4_v2x_msgs/msg/InfrastructureCommandArray](https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_v2x_msgs/msg/InfrastructureCommandArray.msg)\]:<br>Control command to V2I infrastructure. It has an array structure to control multiple infrastructures at the same time.
   - from [autoware_state_machine](https://github.com/eve-autonomy/autoware_state_machine/)
     - `/autoware_state_machine/state` \[[autoware_state_machine_msgs/msg/StateMachine](https://github.com/eve-autonomy/autoware_state_machine_msgs/blob/main/msg/StateMachine.msg)\]:<br>State of the system.
   - from user-defined broadcasting device
@@ -18,28 +20,16 @@ It is necessary to prepare a user-defined broadcasting device, which connects to
 - output
   - to [autoware.universe](https://github.com/autowarefoundation/autoware.universe/)
     - `/system/v2x/virtual_traffic_light_status` \[[tier4_v2x_msgs/msg/VirtualTrafficLightStateArray](https://github.com/tier4/tier4_autoware_msgs/blob/tier4/universe/tier4_v2x_msgs/msg/VirtualTrafficLightStateArray.msg)\]:<br>ROS2 interface from `v2i_status` (UDP).
+  - to [cargo_loading_service](https://github.com/eve-autonomy/cargo_loading_service)
+    - `/v2i/infrastructer_states` \[[v2i_interface_msgs/msg/InfrastructureStateArray.msg](https://github.com/eve-autonomy/v2i_interface_msgs/blob/main/msg/InfrastructureState.msg)\]:<br>ROS2 interface from `v2i_status` (UDP).
   - to user-defined broadcasting device
     - `v2i command` ([UDP](#v2i-command)) :<br>UDP protocol from `/awapi/tmp/infrastructure_commands`.
 
 ## Node Graph
-![node graph](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/eve-autonomy/v2i_interface/main/docs/node_graph.pu)
-
-## Launch arguments
-
-|Name          |Descriptoin|
-|:-------------|:----------|
-|operation_mode|Select the following operation modes; `product`, `local_test`. This value changes parameter directories.|
-
-## Parameter description
-These are mandatory parameters of UDP connection to a user-defined broadcasting device.
-|Name          |
-|:-------------|
-|ip_address    |
-|send_port     |
-|receive_port  |
-
-
-If you want to use different set of paremeters, fork the [v2i_interface_params.default](https://github.com/eve-autonomy/v2i_interface_params.default) repository.
+### v2i interface ｍodule external specifications
+![external specifications of node graph](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/eve-autonomy/v2i_interface/main/docs/node_graph_external_spec.pu)
+### v2i interface ｍodule internal specifications
+![internal specifications of node graph](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/eve-autonomy/v2i_interface/main/docs/node_graph_internal_spec.pu)
 
 ## UDP protocol
 Broadcasting device must meet the following specifications.
@@ -82,7 +72,7 @@ Broadcasting device must meet the following specifications.
 
 </div></details>
 
-### V2I status: virtual_traffic_light_states
+### V2I status: infrastructer_states
 
 ```
 {
@@ -174,3 +164,14 @@ Add every optional tags below to virtual traffic light object.
 | eva_beacon_system:ref:expect_bit | 0x0-0x0f | Expected value which use with stop control specified by response_type. |
 | eva_beacon_system:ref:response_type | ALWAYS<br>AND<br>MATCH | Specifies how the beacon system allow the vehicle to pass. <br>- ALWAYS: Always allows without calculation of value_bit and expect_bit.<br>- AND: Allows when `expect_bit & value_bit ≠0`<br>- MATCH: Allows when `expect_bit = value_bit` |
 | eva_beacon_system:ref:mode | FIXED_VALUE<br>TURN_DIRECTION | - FIXED_VALUE<br>Use request_bit and expect_bit as specified.<br>- TURN_DIRECTION<br>Calculate request_bit and expect_bit based on turn_direction value of VirtualTrafficLight lanelet object.<br>※bit0: Straight, bit1: Turn right, bit2: Turn left |
+
+Add every optional tags below to lane object.
+
+| Name | Range | Description |
+|--|--|--|
+|inparking_loading|0-254|Set infrastructure ID|
+|inparking_engage|1|this tag is auto engage|
+
+## Launch Test mode
+This module has a test mode.
+[This link](https://github.com/eve-autonomy/v2i_interface/tree/main/v2i_interface/) on how to enable test mode.
