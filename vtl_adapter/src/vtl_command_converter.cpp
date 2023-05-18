@@ -88,7 +88,7 @@ std::shared_ptr<InterfaceConverterMultiMap> VtlCommandConverter::createConverter
       RCLCPP_DEBUG(node_->get_logger(),
         "VtlCommandConverter:%s: ignore command::NONE.", __func__);
       continue;
-    }else if (orig_elem.state == MainInputCommand::FINALIZED) {
+    } else if (orig_elem.state == MainInputCommand::FINALIZED) {
       continue;
     }
     const auto converter(new InterfaceConverter(orig_elem, node_));
