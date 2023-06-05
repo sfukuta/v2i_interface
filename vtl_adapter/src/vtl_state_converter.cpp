@@ -61,6 +61,12 @@ bool VtlStateConverter::acceptConverterPipeline(
 
 void VtlStateConverter::onState(const InputStateArr::ConstSharedPtr msg)
 {
+  state_ = msg;
+}
+
+void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
+{
+  if (msg->commands.size() > 0){
   if (!converter_pipeline_) {
     RCLCPP_WARN_THROTTLE(
       node_->get_logger(), *node_->get_clock(), ERROR_THROTTLE_MSEC,
@@ -73,59 +79,76 @@ void VtlStateConverter::onState(const InputStateArr::ConstSharedPtr msg)
       "VtlStateConverter:%s: converter pipeline is not loaded.", __func__);
     return;
   }
-  const auto output_state = createState(msg);
+  const auto finalize_only = isFinalized(msg);
+  const auto output_state = createState(finalize_only);
   if (!output_state) {
     RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid state is found.", __func__);
     return;
   }
   state_pub_->publish(output_state.value());
+  }
 }
 
 std::optional<OutputStateArr>
-  VtlStateConverter::createState(const InputStateArr::ConstSharedPtr& msg)
+  VtlStateConverter::createState(bool finalized_only)
 {
   const auto converter_multimap = converter_pipeline_->load();
   OutputStateArr output_state_arr;
-  output_state_arr.stamp = msg->stamp;
-  for (const auto& state : msg->states) {
-    if (converter_multimap->count(state.id) < 1) {
+  output_state_arr.stamp = state_->stamp;
+  if (!finalized_only) {
+    for (const auto& state : state_->states) {
+      if (converter_multimap->count(state.id) < 1) {
+        RCLCPP_DEBUG(node_->get_logger(),
+          "VtlStateConverter:%s: no converter is found for id:%d.",
+          __func__, state.id);
+        continue;
+      }
+      auto range = converter_multimap->equal_range(state.id);
+      for (auto it = range.first; it != range.second; ++it) {
+        const auto& converter = it->second;
+        const auto& attr = converter->vtlAttribute();
+        if (!attr) {
+          RCLCPP_DEBUG(node_->get_logger(),
+            "VtlStateConverter:%s: no attribute is found for id:%d.",
+            __func__, state.id);
+          continue;
+        }
+        else if (!attr->isValidAttr()) {
+          RCLCPP_DEBUG(node_->get_logger(),
+            "VtlStateConverter:%s: invalid attribute is found for id:%d.",
+            __func__, state.id);
+          continue;
+        }
+        OutputState output_state;
+        output_state.stamp = state_->stamp;
+        output_state.type = attr->type();
+        output_state.id = converter->command().id;
+        output_state.approval = converter->response(state.state);
+        output_state.is_finalized = true;
+        output_state_arr.states.emplace_back(output_state);
+      }
+    }
+    if (output_state_arr.states.empty()) {
       RCLCPP_DEBUG(node_->get_logger(),
-        "VtlStateConverter:%s: no converter is found for id:%d.",
-        __func__, state.id);
-      continue;
+        "VtlStateConverter:%s: no valid state is found.", __func__);
+      return std::nullopt;
     }
-    auto range = converter_multimap->equal_range(state.id);
-    for (auto it = range.first; it != range.second; ++it) {
-      const auto& converter = it->second;
-      const auto& attr = converter->vtlAttribute();
-      if (!attr) {
-        RCLCPP_DEBUG(node_->get_logger(),
-          "VtlStateConverter:%s: no attribute is found for id:%d.",
-          __func__, state.id);
-        continue;
-      }
-      else if (!attr->isValidAttr()) {
-        RCLCPP_DEBUG(node_->get_logger(),
-          "VtlStateConverter:%s: invalid attribute is found for id:%d.",
-          __func__, state.id);
-        continue;
-      }
-      OutputState output_state;
-      output_state.stamp = msg->stamp;
-      output_state.type = attr->type();
-      output_state.id = converter->command().id;
-      output_state.approval = converter->response(state.state);
-      output_state.is_finalized = true;
-      output_state_arr.states.emplace_back(output_state);
-    }
-  }
-  if (output_state_arr.states.empty()) {
-    RCLCPP_DEBUG(node_->get_logger(),
-      "VtlStateConverter:%s: no valid state is found.", __func__);
-    return std::nullopt;
   }
   return output_state_arr;
 }
 
+bool VtlStateConverter::isFinalized(
+    const MainInputCommandArr::ConstSharedPtr& original_command)
+{
+  bool finalized_only = false;
+  for (const auto& orig_elem : original_command->commands) {
+    if (orig_elem.state == MainInputCommand::FINALIZED) {
+      finalized_only = true;
+    }else{
+      return false;
+    }
+  }
+  return finalized_only;
+}
 }  // namespace vtl_state_converter

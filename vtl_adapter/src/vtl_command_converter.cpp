@@ -37,10 +37,6 @@ void VtlCommandConverter::init(rclcpp::Node* node)
   subscriber_option.callback_group = group;
 
   // Subscription
-  command_sub_ = node->create_subscription<MainInputCommandArr>(
-    "~/input/infrastructure_commands", 1,
-    std::bind(&VtlCommandConverter::onCommand, this, _1),
-    subscriber_option);
   state_sub_ = node->create_subscription<SubInputState>(
     "/autoware_state_machine/state", 1,
     std::bind(&VtlCommandConverter::onState, this, _1),

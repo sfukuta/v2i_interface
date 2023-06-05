@@ -24,6 +24,7 @@ namespace vtl_adapter
 using VtlCommandConverter = vtl_command_converter::VtlCommandConverter;
 using VtlStateConverter = vtl_state_converter::VtlStateConverter;
 using SelfApprovalTimer = self_approval_timer::SelfApprovalTimer;
+using MainInputCommandArr = tier4_v2x_msgs::msg::InfrastructureCommandArray;
 
 class VtlAdapterNode : public rclcpp::Node
 {
@@ -38,6 +39,11 @@ private:
 
   // self approval timer
   SelfApprovalTimer self_approval_timer_;
+  
+  // Subscription
+  rclcpp::Subscription<MainInputCommandArr>::SharedPtr command_sub_;
+  
+  void onCommand(const MainInputCommandArr::ConstSharedPtr msg);
 };
 
 }  // namespace vtl_adapter

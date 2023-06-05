@@ -21,6 +21,8 @@ VtlAdapterNode::VtlAdapterNode(
   const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
 : Node("vtl_adapter", options)
 {
+  using namespace std::placeholders;
+
   state_converter_.init(static_cast<rclcpp::Node*>(this));
   command_converter_.init(static_cast<rclcpp::Node*>(this));
   self_approval_timer_.init(static_cast<rclcpp::Node*>(this));
@@ -28,6 +30,17 @@ VtlAdapterNode::VtlAdapterNode(
     command_converter_.converterPipeline());
   self_approval_timer_.acceptConverterPipeline(
     command_converter_.converterPipeline());
+
+  auto group = create_callback_group(
+    rclcpp::CallbackGroupType::MutuallyExclusive);
+  auto subscriber_option = rclcpp::SubscriptionOptions();
+  subscriber_option.callback_group = group;
+
+  // Subscription
+  command_sub_ = create_subscription<MainInputCommandArr>(
+    "~/input/infrastructure_commands", 1,
+    std::bind(&VtlAdapterNode::onCommand, this, _1),
+    subscriber_option);
 }
 
 }  // namespace vtl_adapter
