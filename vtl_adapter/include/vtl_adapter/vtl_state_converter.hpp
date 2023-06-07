@@ -62,7 +62,7 @@ private:
   std::optional<OutputStateArr> createState(bool finalize_only);
   std::shared_ptr<IFConverterDataPipeline> converter_pipeline_;
 
-  InputStateArr::ConstSharedPtr state_
+  InputStateArr::ConstSharedPtr state_;
 };
 
 }  // namespace vtl_state_converter
