@@ -81,8 +81,13 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
         "VtlStateConverter:%s: converter pipeline is not loaded.", __func__);
       return;
     }
-    const auto finalize_only = isFinalized(msg);
-    const auto output_state = createState(finalize_only);
+    auto isNotFinalized = [](const MainInputCommand& cmd) {
+      return (cmd.state != MainInputCommand::FINALIZED);
+    };
+    const auto& cmd_arr = msg->commands;
+    const auto is_all_finalized_commands =
+      (std::count_if(cmd_arr.begin(), cmd_arr.end(), isNotFinalized) == 0);
+    const auto output_state = createState(is_all_finalized_commands);
     if (!output_state) {
       RCLCPP_DEBUG(node_->get_logger(),
         "VtlStateConverter:%s: no valid state is found.", __func__);
@@ -92,27 +97,13 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
   }
 }
 
-bool VtlStateConverter::isFinalized(
-    const MainInputCommandArr::ConstSharedPtr& original_command)
-{
-  bool finalized_only = false;
-  for (const auto& orig_elem : original_command->commands) {
-    if (orig_elem.state == MainInputCommand::FINALIZED) {
-      finalized_only = true;
-    }else{
-      return false;
-    }
-  }
-  return finalized_only;
-}
-
 std::optional<OutputStateArr>
-  VtlStateConverter::createState(bool finalized_only)
+  VtlStateConverter::createState(bool is_all_finalized_commands)
 {
   const auto converter_multimap = converter_pipeline_->load();
   OutputStateArr output_state_arr;
   output_state_arr.stamp = state_->stamp;
-  if (finalized_only) {
+  if (is_all_finalized_commands) {
     return output_state_arr;
   }else{
     for (const auto& state : state_->states) {

@@ -61,7 +61,6 @@ private:
 
   std::optional<OutputStateArr> createState(bool finalize_only);
   std::shared_ptr<IFConverterDataPipeline> converter_pipeline_;
-  bool isFinalized(const MainInputCommandArr::ConstSharedPtr& original_command);
 
   InputStateArr::ConstSharedPtr state_
 };
