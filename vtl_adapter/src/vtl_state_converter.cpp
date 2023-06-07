@@ -110,7 +110,9 @@ std::optional<OutputStateArr>
   const auto converter_multimap = converter_pipeline_->load();
   OutputStateArr output_state_arr;
   output_state_arr.stamp = state_->stamp;
-  if (!finalized_only) {
+  if (finalized_only) {
+    return output_state_arr;
+  }else{
     for (const auto& state : state_->states) {
       if (converter_multimap->count(state.id) < 1) {
         RCLCPP_DEBUG(node_->get_logger(),
