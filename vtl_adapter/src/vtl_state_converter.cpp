@@ -66,27 +66,29 @@ void VtlStateConverter::onState(const InputStateArr::ConstSharedPtr msg)
 
 void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
 {
-  if (msg->commands.size() > 0){
-  if (!converter_pipeline_) {
-    RCLCPP_WARN_THROTTLE(
-      node_->get_logger(), *node_->get_clock(), ERROR_THROTTLE_MSEC,
-      "VtlStateConverter:%s: converter pipeline is not set.", __func__);
+  if (msg->commands.empty()){
     return;
-  }
-  else if (!converter_pipeline_->load()) {
-    RCLCPP_DEBUG(
-      node_->get_logger(),
-      "VtlStateConverter:%s: converter pipeline is not loaded.", __func__);
-    return;
-  }
-  const auto finalize_only = isFinalized(msg);
-  const auto output_state = createState(finalize_only);
-  if (!output_state) {
-    RCLCPP_DEBUG(node_->get_logger(),
-      "VtlStateConverter:%s: no valid state is found.", __func__);
-    return;
-  }
-  state_pub_->publish(output_state.value());
+  }else{
+    if (!converter_pipeline_) {
+      RCLCPP_WARN_THROTTLE(
+        node_->get_logger(), *node_->get_clock(), ERROR_THROTTLE_MSEC,
+        "VtlStateConverter:%s: converter pipeline is not set.", __func__);
+      return;
+    }
+    else if (!converter_pipeline_->load()) {
+      RCLCPP_DEBUG(
+        node_->get_logger(),
+        "VtlStateConverter:%s: converter pipeline is not loaded.", __func__);
+      return;
+    }
+    const auto finalize_only = isFinalized(msg);
+    const auto output_state = createState(finalize_only);
+    if (!output_state) {
+      RCLCPP_DEBUG(node_->get_logger(),
+        "VtlStateConverter:%s: no valid state is found.", __func__);
+      return;
+    }
+    state_pub_->publish(output_state.value());
   }
 }
 
