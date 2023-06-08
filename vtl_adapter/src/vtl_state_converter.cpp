@@ -61,6 +61,14 @@ bool VtlStateConverter::acceptConverterPipeline(
 
 void VtlStateConverter::onState(const InputStateArr::ConstSharedPtr msg)
 {
+  state_ = msg;
+}
+
+void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
+{
+  if (msg->commands.empty()){
+    return;
+  }
   if (!converter_pipeline_) {
     RCLCPP_WARN_THROTTLE(
       node_->get_logger(), *node_->get_clock(), ERROR_THROTTLE_MSEC,
@@ -73,7 +81,13 @@ void VtlStateConverter::onState(const InputStateArr::ConstSharedPtr msg)
       "VtlStateConverter:%s: converter pipeline is not loaded.", __func__);
     return;
   }
-  const auto output_state = createState(msg);
+  auto isNotFinalized = [](const MainInputCommand& cmd) {
+    return (cmd.state != MainInputCommand::FINALIZED);
+  };
+  const auto& cmd_arr = msg->commands;
+  const auto is_all_commands_finalized =
+    (std::count_if(cmd_arr.begin(), cmd_arr.end(), isNotFinalized) == 0);
+  const auto output_state = createState(is_all_commands_finalized);
   if (!output_state) {
     RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid state is found.", __func__);
@@ -83,12 +97,15 @@ void VtlStateConverter::onState(const InputStateArr::ConstSharedPtr msg)
 }
 
 std::optional<OutputStateArr>
-  VtlStateConverter::createState(const InputStateArr::ConstSharedPtr& msg)
+  VtlStateConverter::createState(bool is_all_commands_finalized)
 {
   const auto converter_multimap = converter_pipeline_->load();
   OutputStateArr output_state_arr;
-  output_state_arr.stamp = msg->stamp;
-  for (const auto& state : msg->states) {
+  output_state_arr.stamp = state_->stamp;
+  if (is_all_commands_finalized) {
+    return output_state_arr;
+  }
+  for (const auto& state : state_->states) {
     if (converter_multimap->count(state.id) < 1) {
       RCLCPP_DEBUG(node_->get_logger(),
         "VtlStateConverter:%s: no converter is found for id:%d.",
@@ -112,7 +129,7 @@ std::optional<OutputStateArr>
         continue;
       }
       OutputState output_state;
-      output_state.stamp = msg->stamp;
+      output_state.stamp = state_->stamp;
       output_state.type = attr->type();
       output_state.id = converter->command().id;
       output_state.approval = converter->response(state.state);

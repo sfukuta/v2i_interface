@@ -52,6 +52,7 @@ public:
   VtlCommandConverter();
   void init(rclcpp::Node* node);
   std::shared_ptr<IFConverterDataPipeline> converterPipeline();
+  void onCommand(const MainInputCommandArr::ConstSharedPtr msg);
 private:
   // Node
   rclcpp::Node* node_;
@@ -60,11 +61,9 @@ private:
   rclcpp::Publisher<MainOutputCommandArr>::SharedPtr command_pub_;
 
   // Subscription
-  rclcpp::Subscription<MainInputCommandArr>::SharedPtr command_sub_;
   rclcpp::Subscription<SubInputState>::SharedPtr state_sub_;
 
   // Callback
-  void onCommand(const MainInputCommandArr::ConstSharedPtr msg);
   void onState(const SubInputState::ConstSharedPtr msg);
 
   // Preprocess

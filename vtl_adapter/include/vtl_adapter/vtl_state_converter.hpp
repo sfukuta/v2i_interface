@@ -20,6 +20,7 @@
 // input and output
 #include "tier4_v2x_msgs/msg/virtual_traffic_light_state_array.hpp"
 #include "v2i_interface_msgs/msg/infrastructure_state_array.hpp"
+#include "tier4_v2x_msgs/msg/infrastructure_command_array.hpp"
 
 #include "vtl_adapter/interface_converter_data_pipeline.hpp"
 
@@ -34,6 +35,10 @@ using InterfaceConverterMap =
   std::unordered_map<uint8_t, std::shared_ptr<InterfaceConverter>>;
 using IFConverterDataPipeline =
   interface_converter_data_pipeline::IFConverterDataPipeline;
+using InterfaceConverterMultiMap =
+  std::unordered_multimap<uint8_t, std::shared_ptr<InterfaceConverter>>;
+using MainInputCommandArr = tier4_v2x_msgs::msg::InfrastructureCommandArray;
+using MainInputCommand = tier4_v2x_msgs::msg::InfrastructureCommand;
 
 class VtlStateConverter
 {
@@ -41,6 +46,7 @@ public:
   void init(rclcpp::Node* node);
   bool acceptConverterPipeline(
     std::shared_ptr<IFConverterDataPipeline> converter_pipeline);
+  void onCommand(const MainInputCommandArr::ConstSharedPtr msg);
 private:
   // Node
   rclcpp::Node* node_;
@@ -53,9 +59,10 @@ private:
 
   void onState(const InputStateArr::ConstSharedPtr msg);
 
-  std::optional<OutputStateArr> createState(
-    const InputStateArr::ConstSharedPtr& msg);
+  std::optional<OutputStateArr> createState(bool finalize_only);
   std::shared_ptr<IFConverterDataPipeline> converter_pipeline_;
+
+  InputStateArr::ConstSharedPtr state_;
 };
 
 }  // namespace vtl_state_converter
