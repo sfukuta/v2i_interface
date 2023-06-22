@@ -149,7 +149,6 @@ class V2iInterfaceNode(Node):
                 self._logger.error("send udp error")
                 self.fin()
                 return
-            self._logger.info("send udp {0}".format(self._request_array))
 
     def publish_infrastructure_states(self):
         with self.recv_lock:
