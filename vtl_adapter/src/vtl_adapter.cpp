@@ -25,12 +25,9 @@ VtlAdapterNode::VtlAdapterNode(
 
   state_converter_.init(static_cast<rclcpp::Node*>(this));
   command_converter_.init(static_cast<rclcpp::Node*>(this));
-  self_approval_timer_.init(static_cast<rclcpp::Node*>(this));
   state_converter_.acceptConverterPipeline(
     command_converter_.converterPipeline());
-  self_approval_timer_.acceptConverterPipeline(
-    command_converter_.converterPipeline());
-
+  
   auto group = create_callback_group(
     rclcpp::CallbackGroupType::MutuallyExclusive);
   auto subscriber_option = rclcpp::SubscriptionOptions();

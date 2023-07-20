@@ -28,6 +28,7 @@ namespace vtl_state_converter
 {
 
 using InputStateArr = v2i_interface_msgs::msg::InfrastructureStateArray;
+using InputState = v2i_interface_msgs::msg::InfrastructureState;
 using OutputStateArr = tier4_v2x_msgs::msg::VirtualTrafficLightStateArray;
 using OutputState = tier4_v2x_msgs::msg::VirtualTrafficLightState;
 using InterfaceConverter = eve_vtl_interface_converter::EveVTLInterfaceConverter;
@@ -59,7 +60,8 @@ private:
 
   void onState(const InputStateArr::ConstSharedPtr msg);
 
-  std::optional<OutputStateArr> createState(bool finalize_only);
+  std::optional<std::map<std::string, OutputState>> createState(bool finalize_only);
+  std::optional<std::map<std::string, OutputState>> createSelfApproveState();
   std::shared_ptr<IFConverterDataPipeline> converter_pipeline_;
 
   InputStateArr::ConstSharedPtr state_;

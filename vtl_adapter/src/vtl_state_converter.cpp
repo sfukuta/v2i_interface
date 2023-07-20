@@ -87,27 +87,57 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
   const auto& cmd_arr = msg->commands;
   const auto is_all_commands_finalized =
     (std::count_if(cmd_arr.begin(), cmd_arr.end(), isNotFinalized) == 0);
-  const auto output_state = createState(is_all_commands_finalized);
+  auto output_state = createState(is_all_commands_finalized);
   if (!output_state) {
     RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid state is found.", __func__);
+  }
+
+  auto  self_approve_state_arr = createSelfApproveState();
+  if (!self_approve_state_arr) {
+    RCLCPP_DEBUG(node_->get_logger(),
+      "VtlStateConverter:%s: no valid self approve state is found.", __func__);
     return;
   }
-  state_pub_->publish(output_state.value());
+  
+  if(output_state.has_value() == true && self_approve_state_arr.has_value() == true){
+      output_state.value().insert(self_approve_state_arr.value().begin(),self_approve_state_arr.value().end());
+  }
+  else if (self_approve_state_arr.has_value() == true){
+      output_state = self_approve_state_arr;
+  }
+
+  if(output_state.has_value() == true){
+    if(output_state.value().size() > 0){
+      std::optional<OutputStateArr> output_state_arr_send = OutputStateArr();
+      output_state_arr_send->stamp = rclcpp::Clock(RCL_ROS_TIME).now();
+      for (const auto& [key, value] : output_state.value()){
+        output_state_arr_send->states.emplace_back(value);
+      }
+      if (output_state_arr_send.has_value() == false) {
+        RCLCPP_DEBUG(node_->get_logger(),
+        "VtlStateConverter:%s: no valid state is found2.", __func__);
+      }else{
+        RCLCPP_DEBUG(node_->get_logger(),
+        "VtlStateConverter:%s: success.", __func__);
+        state_pub_->publish(output_state_arr_send.value());
+      }
+  }
+  } 
 }
 
-std::optional<OutputStateArr>
+std::optional<std::map<std::string, OutputState>>
   VtlStateConverter::createState(bool is_all_commands_finalized)
 {
   const auto converter_multimap = converter_pipeline_->load();
-  OutputStateArr output_state_arr;
-  output_state_arr.stamp = state_->stamp;
+  std::map<std::string, OutputState> output_state_arr_map;
   if (is_all_commands_finalized) {
-    return output_state_arr;
+    return std::nullopt;
   }
+
   for (const auto& state : state_->states) {
     if (converter_multimap->count(state.id) < 1) {
-      RCLCPP_DEBUG(node_->get_logger(),
+      RCLCPP_DEBUG(node_->get_logger(), 
         "VtlStateConverter:%s: no converter is found for id:%d.",
         __func__, state.id);
       continue;
@@ -134,15 +164,74 @@ std::optional<OutputStateArr>
       output_state.id = converter->command().id;
       output_state.approval = converter->response(state.state);
       output_state.is_finalized = true;
-      output_state_arr.states.emplace_back(output_state);
+      output_state_arr_map.insert(std::make_pair(output_state.id,output_state));
     }
   }
-  if (output_state_arr.states.empty()) {
+  if (output_state_arr_map.empty()) {
     RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid state is found.", __func__);
     return std::nullopt;
   }
-  return output_state_arr;
+  return output_state_arr_map;
 }
 
+std::optional<std::map<std::string, OutputState>>
+ VtlStateConverter::createSelfApproveState()
+{
+  const auto converter_map = converter_pipeline_->load();
+  if (!converter_map) {
+    RCLCPP_DEBUG(node_->get_logger(),
+      "SelfApprovalTimer:%s: converter map is not loaded.", __func__);
+    return std::nullopt;
+  }
+  else if (converter_map->empty()) {
+    RCLCPP_DEBUG(node_->get_logger(),
+      "SelfApprovalTimer:%s: converter map is empty.", __func__);
+    return std::nullopt;
+  }
+
+  std::map<std::string, OutputState> output_state_arr_map;
+  std::unordered_set<uint8_t> id_set;
+  for (const auto& elem : *converter_map) {
+    const auto& converter = elem.second;
+    const auto& attr = converter->vtlAttribute();
+    if (!attr) {
+      RCLCPP_DEBUG(node_->get_logger(),
+        "SelfApprovalTimer:%s: vtl attribute is not set at id=%d.",
+        __func__, elem.first);
+      continue;
+    }
+    else if (!attr->isValidAttr()) {
+      RCLCPP_DEBUG(node_->get_logger(),
+        "SelfApprovalTimer:%s: vtl attribute is not valid at id=%d.",
+        __func__, elem.first);
+      continue;
+    }
+    else if (!attr->isSelfApproval()) {
+      RCLCPP_DEBUG(node_->get_logger(),
+        "SelfApprovalTimer:%s: vtl attribute is not self approval at id=%d.",
+        __func__, elem.first);
+      continue;
+    }
+
+    const uint8_t id = attr->id().value();
+    if (id_set.find(id) != id_set.end()) {
+      continue;
+    }
+    id_set.emplace(id);
+    OutputState output_state;
+    output_state.stamp = rclcpp::Clock(RCL_ROS_TIME).now();
+    output_state.type = attr->type();
+    output_state.id = converter->command().id;
+    output_state.approval = converter->response(attr->expectBit().value());
+    output_state.is_finalized = true;
+      output_state_arr_map.insert(std::make_pair(output_state.id,output_state));
+  }
+  if (output_state_arr_map.empty()) {
+    RCLCPP_DEBUG(node_->get_logger(),
+      "SelfApprovalTimer:%s: self input state is empty.", __func__);
+    return std::nullopt;
+  }
+  return output_state_arr_map;
+}
 }  // namespace vtl_state_converter
