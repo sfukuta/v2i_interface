@@ -84,6 +84,9 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
   auto isNotFinalized = [](const MainInputCommand& cmd) {
     return (cmd.state != MainInputCommand::FINALIZED);
   };
+
+  std::map<std::string, OutputState> output_state_arr; 
+  
   const auto& cmd_arr = msg->commands;
   const auto is_all_commands_finalized =
     (std::count_if(cmd_arr.begin(), cmd_arr.end(), isNotFinalized) == 0);
@@ -91,39 +94,32 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
   if (!output_state) {
     RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid state is found.", __func__);
+  }else{
+    output_state_arr.insert(output_state.value().begin(),output_state.value().end());
   }
 
-  auto  self_approve_state_arr = createSelfApproveState();
+  const auto self_approve_state_arr = createSelfApproveState();
   if (!self_approve_state_arr) {
     RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid self approve state is found.", __func__);
-    return;
-  }
-  
-  if(output_state.has_value() == true && self_approve_state_arr.has_value() == true){
-      output_state.value().insert(self_approve_state_arr.value().begin(),self_approve_state_arr.value().end());
-  }
-  else if (self_approve_state_arr.has_value() == true){
-      output_state = self_approve_state_arr;
+  }else{
+    output_state_arr.insert(self_approve_state_arr.value().begin(),self_approve_state_arr.value().end());
   }
 
-  if(output_state.has_value() == true){
-    if(output_state.value().size() > 0){
-      std::optional<OutputStateArr> output_state_arr_send = OutputStateArr();
-      output_state_arr_send->stamp = rclcpp::Clock(RCL_ROS_TIME).now();
-      for (const auto& [key, value] : output_state.value()){
-        output_state_arr_send->states.emplace_back(value);
-      }
-      if (output_state_arr_send.has_value() == false) {
-        RCLCPP_DEBUG(node_->get_logger(),
-        "VtlStateConverter:%s: no valid state is found2.", __func__);
-      }else{
-        RCLCPP_DEBUG(node_->get_logger(),
-        "VtlStateConverter:%s: success.", __func__);
-        state_pub_->publish(output_state_arr_send.value());
-      }
+  std::optional<OutputStateArr> output_state_arr_send = OutputStateArr();
+  output_state_arr_send->stamp = rclcpp::Clock(RCL_ROS_TIME).now();
+
+  if(!is_all_commands_finalized){
+    if(output_state_arr.size() == 0){
+      output_state_arr_send = std::nullopt;
+    }
+    for (const auto& [key, value] : output_state_arr){
+      output_state_arr_send->states.emplace_back(value);
+    }
   }
-  } 
+  if(output_state_arr_send.has_value()){
+      state_pub_->publish(output_state_arr_send.value());
+  }
 }
 
 std::optional<std::map<std::string, OutputState>>
