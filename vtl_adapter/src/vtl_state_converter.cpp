@@ -98,12 +98,12 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
     output_state_arr.insert(output_state.value().begin(),output_state.value().end());
   }
 
-  const auto self_approve_state_arr = createSelfApproveState();
-  if (!self_approve_state_arr) {
+  const auto self_approval_state_arr = createSelfApprovalState();
+  if (!self_approval_state_arr) {
     RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid self approve state is found.", __func__);
   }else{
-    output_state_arr.insert(self_approve_state_arr.value().begin(),self_approve_state_arr.value().end());
+    output_state_arr.insert(self_approval_state_arr.value().begin(),self_approval_state_arr.value().end());
   }
 
   std::optional<OutputStateArr> output_state_arr_send = OutputStateArr();
@@ -172,7 +172,7 @@ std::optional<std::map<std::string, OutputState>>
 }
 
 std::optional<std::map<std::string, OutputState>>
- VtlStateConverter::createSelfApproveState()
+ VtlStateConverter::createSelfApprovalState()
 {
   const auto converter_map = converter_pipeline_->load();
   if (!converter_map) {
