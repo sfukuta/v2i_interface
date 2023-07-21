@@ -220,12 +220,8 @@ std::optional<std::map<std::string, OutputState>>
     output_state.type = attr->type();
     output_state.id = converter->command().id;
     output_state.approval = converter->response(attr->expectBit().value());
-          output_state.stamp = state_->stamp;
-      output_state.approval = converter->response(state.state);
-      output_state.is_finalized = true;
-      output_state_arr_map.insert(std::make_pair(output_state.id,output_state));
-
-      output_state_arr_map.insert(std::make_pair(output_state.id,output_state));
+    output_state.is_finalized = true;
+    output_state_arr_map.insert(std::make_pair(output_state.id,output_state));
   }
   if (output_state_arr_map.empty()) {
     RCLCPP_DEBUG(node_->get_logger(),
