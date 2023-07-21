@@ -90,7 +90,7 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
   const auto& cmd_arr = msg->commands;
   const auto is_all_commands_finalized =
     (std::count_if(cmd_arr.begin(), cmd_arr.end(), isNotFinalized) == 0);
-  auto output_state = createState(is_all_commands_finalized);
+  const auto output_state = createState(is_all_commands_finalized);
   if (!output_state) {
     RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid state is found.", __func__);
