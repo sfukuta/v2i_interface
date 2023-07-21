@@ -85,7 +85,7 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
     return (cmd.state != MainInputCommand::FINALIZED);
   };
 
-  std::map<std::string, OutputState> output_state_records; 
+  std::map<std::string, OutputState> merged_state_map; 
   
   const auto& cmd_arr = msg->commands;
   const auto is_all_commands_finalized =
@@ -95,12 +95,12 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
   output_state->stamp = rclcpp::Clock(RCL_ROS_TIME).now();
 
   if(!is_all_commands_finalized){
-    const auto v2i_state = createState();
-    if (!v2i_state) {
+    const auto received_state = createState();
+    if (!received_state) {
       RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid state is found.", __func__);
     }else{
-      output_state_records.insert(v2i_state.value().begin(),v2i_state.value().end());
+      merged_state_map.insert(received_state.value().begin(),received_state.value().end());
     }
 
     const auto self_approval_state = createSelfApprovalState();
@@ -108,13 +108,13 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
       RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid self approve state is found.", __func__);
     }else{
-      output_state_records.insert(self_approval_state.value().begin(),self_approval_state.value().end());
+      merged_state_map.insert(self_approval_state.value().begin(),self_approval_state.value().end());
     }
     
-    if(output_state_records.size() == 0){
+    if(merged_state_map.size() == 0){
       output_state = std::nullopt;
     }
-    for (const auto& [key, value] : output_state_records){
+    for (const auto& [key, value] : merged_state_map){
       output_state->states.emplace_back(value);
     }
   }
