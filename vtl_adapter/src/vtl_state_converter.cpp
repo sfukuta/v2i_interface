@@ -186,6 +186,8 @@ std::optional<std::map<std::string, OutputState>>
 
   std::map<std::string, OutputState> output_state_arr_map;
   std::unordered_set<uint8_t> id_set;
+  const auto stamp = rclcpp::Clock(RCL_ROS_TIME).now();
+
   for (const auto& elem : *converter_map) {
     const auto& converter = elem.second;
     const auto& attr = converter->vtlAttribute();
@@ -214,7 +216,7 @@ std::optional<std::map<std::string, OutputState>>
     }
     id_set.emplace(id);
     OutputState output_state;
-    output_state.stamp = rclcpp::Clock(RCL_ROS_TIME).now();
+    output_state.stamp = stamp;
     output_state.type = attr->type();
     output_state.id = converter->command().id;
     output_state.approval = converter->response(attr->expectBit().value());
