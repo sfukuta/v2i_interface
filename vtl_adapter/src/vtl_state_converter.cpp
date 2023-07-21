@@ -90,26 +90,27 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
   const auto& cmd_arr = msg->commands;
   const auto is_all_commands_finalized =
     (std::count_if(cmd_arr.begin(), cmd_arr.end(), isNotFinalized) == 0);
-  const auto output_state = createState(is_all_commands_finalized);
-  if (!output_state) {
-    RCLCPP_DEBUG(node_->get_logger(),
-      "VtlStateConverter:%s: no valid state is found.", __func__);
-  }else{
-    output_state_arr.insert(output_state.value().begin(),output_state.value().end());
-  }
-
-  const auto self_approval_state_arr = createSelfApprovalState();
-  if (!self_approval_state_arr) {
-    RCLCPP_DEBUG(node_->get_logger(),
-      "VtlStateConverter:%s: no valid self approve state is found.", __func__);
-  }else{
-    output_state_arr.insert(self_approval_state_arr.value().begin(),self_approval_state_arr.value().end());
-  }
 
   std::optional<OutputStateArr> output_state_arr_send = OutputStateArr();
   output_state_arr_send->stamp = rclcpp::Clock(RCL_ROS_TIME).now();
 
   if(!is_all_commands_finalized){
+    const auto output_state = createState();
+    if (!output_state) {
+      RCLCPP_DEBUG(node_->get_logger(),
+      "VtlStateConverter:%s: no valid state is found.", __func__);
+    }else{
+      output_state_arr.insert(output_state.value().begin(),output_state.value().end());
+    }
+
+    const auto self_approval_state_arr = createSelfApprovalState();
+    if (!self_approval_state_arr) {
+      RCLCPP_DEBUG(node_->get_logger(),
+      "VtlStateConverter:%s: no valid self approve state is found.", __func__);
+    }else{
+      output_state_arr.insert(self_approval_state_arr.value().begin(),self_approval_state_arr.value().end());
+    }
+    
     if(output_state_arr.size() == 0){
       output_state_arr_send = std::nullopt;
     }
@@ -123,13 +124,10 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
 }
 
 std::optional<std::map<std::string, OutputState>>
-  VtlStateConverter::createState(bool is_all_commands_finalized)
+  VtlStateConverter::createState()
 {
   const auto converter_multimap = converter_pipeline_->load();
   std::map<std::string, OutputState> output_state_arr_map;
-  if (is_all_commands_finalized) {
-    return std::nullopt;
-  }
 
   for (const auto& state : state_->states) {
     if (converter_multimap->count(state.id) < 1) {

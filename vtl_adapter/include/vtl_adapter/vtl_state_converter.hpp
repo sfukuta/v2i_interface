@@ -60,7 +60,7 @@ private:
 
   void onState(const InputStateArr::ConstSharedPtr msg);
 
-  std::optional<std::map<std::string, OutputState>> createState(bool finalize_only);
+  std::optional<std::map<std::string, OutputState>> createState();
   std::optional<std::map<std::string, OutputState>> createSelfApprovalState();
   std::shared_ptr<IFConverterDataPipeline> converter_pipeline_;
 
