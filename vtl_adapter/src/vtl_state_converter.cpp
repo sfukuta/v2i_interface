@@ -85,41 +85,41 @@ void VtlStateConverter::onCommand(const MainInputCommandArr::ConstSharedPtr msg)
     return (cmd.state != MainInputCommand::FINALIZED);
   };
 
-  std::map<std::string, OutputState> output_state_arr; 
+  std::map<std::string, OutputState> output_state_records; 
   
   const auto& cmd_arr = msg->commands;
   const auto is_all_commands_finalized =
     (std::count_if(cmd_arr.begin(), cmd_arr.end(), isNotFinalized) == 0);
 
-  std::optional<OutputStateArr> output_state_arr_send = OutputStateArr();
-  output_state_arr_send->stamp = rclcpp::Clock(RCL_ROS_TIME).now();
+  std::optional<OutputStateArr> output_state = OutputStateArr();
+  output_state->stamp = rclcpp::Clock(RCL_ROS_TIME).now();
 
   if(!is_all_commands_finalized){
-    const auto output_state = createState();
-    if (!output_state) {
+    const auto v2i_state = createState();
+    if (!v2i_state) {
       RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid state is found.", __func__);
     }else{
-      output_state_arr.insert(output_state.value().begin(),output_state.value().end());
+      output_state_records.insert(v2i_state.value().begin(),v2i_state.value().end());
     }
 
-    const auto self_approval_state_arr = createSelfApprovalState();
-    if (!self_approval_state_arr) {
+    const auto self_approval_state = createSelfApprovalState();
+    if (!self_approval_state) {
       RCLCPP_DEBUG(node_->get_logger(),
       "VtlStateConverter:%s: no valid self approve state is found.", __func__);
     }else{
-      output_state_arr.insert(self_approval_state_arr.value().begin(),self_approval_state_arr.value().end());
+      output_state_records.insert(self_approval_state.value().begin(),self_approval_state.value().end());
     }
     
-    if(output_state_arr.size() == 0){
-      output_state_arr_send = std::nullopt;
+    if(output_state_records.size() == 0){
+      output_state = std::nullopt;
     }
-    for (const auto& [key, value] : output_state_arr){
-      output_state_arr_send->states.emplace_back(value);
+    for (const auto& [key, value] : output_state_records){
+      output_state->states.emplace_back(value);
     }
   }
-  if(output_state_arr_send.has_value()){
-      state_pub_->publish(output_state_arr_send.value());
+  if(output_state.has_value()){
+      state_pub_->publish(output_state.value());
   }
 }
 
@@ -218,7 +218,11 @@ std::optional<std::map<std::string, OutputState>>
     output_state.type = attr->type();
     output_state.id = converter->command().id;
     output_state.approval = converter->response(attr->expectBit().value());
-    output_state.is_finalized = true;
+          output_state.stamp = state_->stamp;
+      output_state.approval = converter->response(state.state);
+      output_state.is_finalized = true;
+      output_state_arr_map.insert(std::make_pair(output_state.id,output_state));
+
       output_state_arr_map.insert(std::make_pair(output_state.id,output_state));
   }
   if (output_state_arr_map.empty()) {
