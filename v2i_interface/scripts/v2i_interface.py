@@ -18,6 +18,7 @@
 import signal
 import threading
 import time
+from rclpy.executors import ExternalShutdownException 
 from rclpy.time import Time
 
 from v2i_interface_msgs.msg import (
@@ -82,10 +83,6 @@ class V2iInterfaceNode(Node):
         self._recv_stamp = self.get_clock().now()
         self._request_array = []
         self._request_stamp = self.get_clock().now()
-
-
-    def __del__(self):
-        self.fin()
 
     def fin(self):
         self._th_close = True
@@ -175,20 +172,20 @@ class V2iInterfaceNode(Node):
         duration_sec = duration.nanoseconds * 1e-9
         return (duration_sec > self._data_store_timeout_sec)
 
-
-def shutdown(signal, frame):
-    node.fin()
-    rclpy.shutdown()
-
 def main(args=None):
-    global node
-    signal.signal(signal.SIGINT, shutdown)
-
-    rclpy.init(args=args)
-
-    node = V2iInterfaceNode()
-    rclpy.spin(node)
-
+    try:
+        global node
+        rclpy.init(args=args)
+        node = V2iInterfaceNode()
+        while rclpy.ok():
+            rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    except ExternalShutdownException:
+        pass
+    finally:
+        node.fin()
+        rclpy.try_shutdown()
 
 if __name__ == '__main__':
     main()
